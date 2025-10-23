@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Elskåp-AR – trailer</title>
+
+  <!-- MindAR + THREE (CDN). Om någon länk strular: testa utan versionsnummer eller uppdatera till senaste. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-image.prod.css">
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-image.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.0/dist/mindar-image-three.prod.js"></script>
+
+  <style>
+    html, body { margin:0; padding:0; height:100%; background:#000; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    #app { position: fixed; inset: 0; }
+    .ui {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      display: flex; gap: 12px; align-items: center; justify-content: center;
+      padding: 12px 16px 24px; pointer-events: none;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 40%, rgba(0,0,0,.8) 100%);
+      color: #fff; text-align: center; font-size: 15px; line-height: 1.4;
+    }
+    .ui > * { pointer-events: auto; }
+    .btn {
+      background: #fff; color: #000; border: 0; border-radius: 999px; padding: 10px 16px;
+      font-weight: 600; font-size: 14px;
+    }
+    .pill { background: rgba(255,255,255,.1); padding: 8px 12px; border-radius: 999px; }
+    .hidden { display: none !important; }
+    .top {
+      position: fixed; left: 0; right: 0; top: 0;
+      display:flex; justify-content:center; padding: 8px; z-index: 2;
+    }
+    .tip { background: rgba(0,0,0,.6); color:#fff; padding:8px 12px; border-radius:999px; font-size:13px; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- För iOS autoplay: börja alltid muted/inline -->
+  <video id="trailer" src="./assets/trailer.mp4" playsinline webkit-playsinline muted loop crossorigin="anonymous" class="hidden"></video>
+
+  <div class="top"><div class="tip" id="status">Startar kamera…</div></div>
+
+  <div class="ui">
+    <button class="btn" id="startBtn">Starta AR</button>
+    <button class="btn hidden" id="soundBtn">🔊 Ljud på</button>
+    <span class="pill hidden" id="hint">Rikta mobilen mot elskåpet på din skärm</span>
+  </div>
+
+  <script>
+    const startBtn = document.querySelector("#startBtn");
+    const soundBtn = document.querySelector("#soundBtn");
+    const statusEl = document.querySelector("#status");
+    const hintEl = document.querySelector("#hint");
+    const video = document.querySelector("#trailer");
+
+    let started = false;
+
+    startBtn.addEventListener("click", async () => {
+      if (started) return;
+      started = true;
+      startBtn.classList.add("hidden");
+      hintEl.classList.remove("hidden");
+      statusEl.textContent = "Ge kameratillstånd…";
+
+      // Init MindAR + THREE
+      const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+        container: document.querySelector("#app"),
+        imageTargetSrc: "./assets/elskap.mind", // <- din target-fil (skapad från elskåpsbilden)
+        maxTrack: 1, uiLoading: "no",
+      });
+      const {renderer, scene, camera} = mindarThree;
+
+      // Ljus
+      const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);
+      scene.add(light);
+
+      // Anchors och plane
+      const anchor = mindarThree.addAnchor(0); // target index 0
+      const planeW = 1.0;   // bredd i AR-världen (meter). Justera så videon "passar" skåpet.
+      const planeH = 1.0 * (9/16); // antag 16:9 trailer – ändra efter din video/aspekt
+      const geometry = new THREE.PlaneGeometry(planeW, planeH);
+
+      // Video-textur
+      const texture = new THREE.VideoTexture(video);
+      texture.encoding = THREE.sRGBEncoding;
+      const material = new THREE.MeshBasicMaterial({map: texture, toneMapped: false});
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(0, 0, 0);
+      anchor.group.add(mesh);
+
+      // Hooks: target hittad/förlorad
+      anchor.onTargetFound = () => {
+        statusEl.textContent = "Låst på elskåpet ✔";
+        hintEl.textContent = "Håll skåpet i bild";
+        soundBtn.classList.remove("hidden");
+        video.play().catch(()=>{});
+      };
+      anchor.onTargetLost = () => {
+        statusEl.textContent = "Tappar spårning… rikta mot skåpet igen";
+        // pausa ej videon – fortsätt loop för snabb återkomst
+      };
+
+      // Starta
+      await mindarThree.start();
+      statusEl.textContent = "Rikta mobilen mot elskåpet på din skärm";
+
+      // Render-loop
+      renderer.setAnimationLoop(() => {
+        renderer.render(scene, camera);
+      });
+    });
+
+    // Ljud-knapp – iOS kräver användargest för att unmute
+    soundBtn.addEventListener("click", () => {
+      video.muted = false;
+      video.play().catch(()=>{});
+      soundBtn.classList.add("hidden");
+    });
+  </script>
+</body>
+</html>

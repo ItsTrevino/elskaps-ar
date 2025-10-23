@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Elskåp – desktop target</title>
+  <style>
+    html, body { margin:0; padding:0; background:#0b0b0b; color:#fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .wrap { max-width: 1100px; margin: 40px auto; padding: 0 16px; }
+    .hero { display:block; width:100%; height:auto; border-radius:12px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+    .grid { display:grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
+    @media (min-width: 860px) { .grid { grid-template-columns: 2fr 1fr; } }
+    .card { background:#141414; border:1px solid #242424; border-radius:12px; padding:16px; }
+    .btn { display:inline-block; background:#fff; color:#000; padding:12px 16px; border-radius:999px; font-weight:700; text-decoration:none; }
+    .muted { color:#aaa; font-size:14px; }
+    .qr { width:180px; height:180px; background:#fff; display:grid; place-items:center; border-radius:8px; overflow:hidden; }
+    .qr img { width:100%; height:100%; object-fit:cover; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="grid">
+      <div class="card">
+        <h1>Rikta mobilkameran mot bilden</h1>
+        <p class="muted">Öppna AR på mobilen, rikta kameran mot bilden nedan. Höj gärna skärmens ljusstyrka.</p>
+        <!-- Byt ut src till din riktiga elskåpsbild (samma som du använde för target-filen) -->
+        <img class="hero" src="./assets/elskap.jpg" alt="Elskåp – targetbild">
+      </div>
+      <div class="card">
+        <h2>Öppna AR i mobilen</h2>
+        <p>Skanna QR-koden eller öppna länken på mobilen.</p>
+        <!-- Byt href till den verkliga URL:en där du hostar ar.html (t.ex. GitHub Pages-länk) -->
+        <p><a class="btn" href="./ar.html">Öppna AR</a></p>
+        <div class="qr">
+          <!-- Du kan byta denna bild till en QR kod som pekar på din ar.html -->
+          <span style="color:#000; font-weight:700;">QR här</span>
+        </div>
+        <p class="muted">Tips: Om du visar detta i Wix, lägg bara in bilden och länken/QR på din Wix-sida.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
