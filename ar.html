@@ -39,7 +39,8 @@
   <div id="app"></div>
 
   <!-- För iOS autoplay: börja alltid muted/inline -->
-  <video id="trailer" src="./assets/trailer.mp4" playsinline webkit-playsinline muted loop crossorigin="anonymous" class="hidden"></video>
+  <img id="poster" src="./assets/nisseble.jpg" class="hidden">
+
 
   <div class="top"><div class="tip" id="status">Startar kamera…</div></div>
 
@@ -83,8 +84,10 @@
       const planeH = 1.0 * (9/16); // antag 16:9 trailer – ändra efter din video/aspekt
       const geometry = new THREE.PlaneGeometry(planeW, planeH);
 
-      // Video-textur
-      const texture = new THREE.VideoTexture(video);
+      // Bild-textur
+const img = document.querySelector("#poster");
+const texture = new THREE.TextureLoader().load(img.src);
+
       texture.encoding = THREE.sRGBEncoding;
       const material = new THREE.MeshBasicMaterial({map: texture, toneMapped: false});
       const mesh = new THREE.Mesh(geometry, material);
